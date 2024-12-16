@@ -1,0 +1,216 @@
+/* with dark mode and color variables, make responsive */
+@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap");
+
+:root {
+    --background-color: #fff;
+    --text-color: #000;
+    --border-color: #ccc;
+    --button-bg-color: #4caf50;
+    --button-hover-bg-color: #45a049;
+
+    --red-block: #f44336;
+    --green-block: #51ea56;
+    --blue-block: #2196f3;
+    --yellow-block: #ffeb3b;
+    --purple-block: #9c27b0;
+    --orange-block: #ff9800;
+    --pink-block: #e91e63;
+    --cyan-block: #00bcd4;
+}
+body {
+    font-family: "Nunito Sans", sans-serif;
+    padding: 2rem;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+body.dark-mode {
+    --background-color: #333;
+    --text-color: #eee;
+    --border-color: #666;
+    --button-bg-color: #555;
+    --button-hover-bg-color: #444;
+
+    --red-block: #f44336;
+    --green-block: #51ea56;
+    --blue-block: #2196f3;
+    --yellow-block: #ffeb3b;
+    --purple-block: #9c27b0;
+    --orange-block: #ff9800;
+    --pink-block: #e91e63;
+    --cyan-block: #00bcd4;
+}
+button {
+    padding: 10px 20px;
+    background-color: var(--button-bg-color);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+button:hover {
+    background-color: var(--button-hover-bg-color);
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+body.dark-mode #container {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+#game {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+    max-width: 800px;
+}
+
+#squares {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-gap: 0;
+    margin-bottom: 0;
+    width: 100%;
+    max-width: 640px;
+    height: 640px;
+}
+
+.square {
+    width: 78px;
+    height: 78px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--text-color);
+}
+
+#block-select {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 198px;
+    height: 638px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    margin-left: 20px;
+}
+
+#scores {
+    width: 640px;
+    display: flex;
+    flex: 1;
+    justify-content: space-around;
+    align-items: center;
+}
+
+#top {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+}
+
+#dark-mode-toggle {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 140px;
+}
+
+.block-pick {
+    width: 80%;
+    height: 33%;
+    margin: 10px;
+    background-color: var(--button-bg-color);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.block-pick:hover {
+    background-color: var(--button-hover-bg-color);
+}
+
+#block1,
+#block2 {
+    margin-bottom: 0;
+}
+
+.item {
+    display: flex;
+    flex-direction: row;
+}
+
+/* Media Queries */
+@media screen and (max-width: 600px) {
+    #game {
+        flex-direction: column;
+        width: 240px;
+    }
+    #squares {
+        width: 240px;
+        height: 240px;
+    }
+    .square {
+        width: 28px;
+        height: 28px;
+    }
+    #block-select {
+        width: 238px;
+        height: 98px;
+        margin-left: 0;
+        margin-top: 20px;
+        flex-direction: row;
+        align-items: center;
+    }
+    .block-pick {
+        width: 30%;
+        height: 80%;
+        margin: 10px;
+    }
+    #scores {
+        width: 240px;
+    }
+    #dark-mode-toggle {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        justify-content: flex-start;
+    }
+    #block1,
+    #block2 {
+        margin-bottom: 10px;
+        margin-right: 0;
+    }
+}
