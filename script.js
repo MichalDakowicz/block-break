@@ -153,8 +153,6 @@ document.addEventListener("DOMContentLoaded", () => {
         ], // S-shape rotated 90 degrees
         [[1, 1, 1, 1, 1]], // Long line (5 blocks)
         [[1], [1], [1], [1], [1]], // Vertical line (5 blocks)
-        [[1, 1, 1, 1, 1, 1]], // Long line (6 blocks)
-        [[1], [1], [1], [1], [1], [1]], // Vertical line (6 blocks)
         [
             [1, 0, 0],
             [1, 0, 0],
@@ -180,6 +178,64 @@ document.addEventListener("DOMContentLoaded", () => {
     let selectedBlock = null;
     let placedBlocksCount = 0;
 
+    let score = 0;
+    let lives = 3;
+    const scoreElement = document.getElementById("score");
+    const highScoreElement = document.getElementById("high-score");
+    const livesElement = document.getElementById("lives");
+
+    const resetButton = document.getElementById("reset-game");
+    resetButton.addEventListener("click", resetGame);
+
+    let initialBlocksGenerated = false;
+
+    function updateScore(points) {
+        score += points;
+        scoreElement.textContent = score;
+        const highScore = localStorage.getItem("highScore") || 0;
+        if (score > highScore) {
+            localStorage.setItem("highScore", score);
+            highScoreElement.textContent = score;
+        }
+    }
+
+    function calculateBlockScore(shape) {
+        let count = 0;
+        shape.forEach((row) => {
+            row.forEach((cell) => {
+                if (cell) count++;
+            });
+        });
+        return count * 10; // Each square in the block is worth 10 points
+    }
+
+    function showReshuffleDialog() {
+        const reshuffle = confirm(
+            "Game Over! Do you want to reshuffle the blocks and continue? This will remove 1 life."
+        );
+        if (reshuffle) {
+            lives -= 1; // Set lives to 1 since the user chose to reshuffle
+            livesElement.textContent = lives;
+            generateBlocks();
+        } else {
+            resetGame();
+        }
+    }
+
+    function resetGame() {
+        score = 0;
+        lives = 3;
+        scoreElement.textContent = score;
+        livesElement.textContent = lives;
+        initializeGrid(8, 8);
+        generateBlocks();
+        localStorage.removeItem("boardState");
+        localStorage.removeItem("blocksState");
+        localStorage.removeItem("blockSelectState");
+        localStorage.removeItem("score");
+        localStorage.removeItem("lives");
+    }
+
     // Generate random blocks
     function generateBlocks() {
         blocksContainer.innerHTML = "";
@@ -198,6 +254,14 @@ document.addEventListener("DOMContentLoaded", () => {
             blockElement.addEventListener("click", () =>
                 selectBlock(blockElement)
             );
+        }
+
+        saveGameState(); // Save game state after generating new blocks
+
+        if (initialBlocksGenerated && !hasValidMoves()) {
+            showReshuffleDialog();
+        } else {
+            initialBlocksGenerated = true;
         }
     }
 
@@ -253,6 +317,51 @@ document.addEventListener("DOMContentLoaded", () => {
         selectedBlock = block;
     }
 
+    function saveGameState() {
+        const boardState = [];
+        document.querySelectorAll(".square").forEach((cell) => {
+            boardState.push(cell.style.backgroundColor || "");
+        });
+        const blocksState = [];
+        document.querySelectorAll(".block-pick").forEach((block) => {
+            blocksState.push({
+                shape: block.dataset.shape,
+                color: block.dataset.color,
+            });
+        });
+        localStorage.setItem("boardState", JSON.stringify(boardState));
+        localStorage.setItem("blocksState", JSON.stringify(blocksState));
+        localStorage.setItem("score", score);
+        localStorage.setItem("lives", lives);
+    }
+
+    function loadGameState() {
+        const boardState = JSON.parse(localStorage.getItem("boardState"));
+        const blocksState = JSON.parse(localStorage.getItem("blocksState"));
+        if (boardState && blocksState) {
+            document.querySelectorAll(".square").forEach((cell, index) => {
+                cell.style.backgroundColor = boardState[index];
+            });
+            blocksContainer.innerHTML = "";
+            blocksState.forEach((blockData) => {
+                const blockShape = JSON.parse(blockData.shape);
+                const blockColor = blockData.color;
+                const blockElement = createBlockElement(blockShape, blockColor);
+                blockElement.classList.add("block-pick");
+                blockElement.dataset.shape = blockData.shape;
+                blockElement.dataset.color = blockColor;
+                blocksContainer.appendChild(blockElement);
+                blockElement.addEventListener("click", () =>
+                    selectBlock(blockElement)
+                );
+            });
+            score = parseInt(localStorage.getItem("score"));
+            lives = parseInt(localStorage.getItem("lives"));
+            scoreElement.textContent = score;
+            livesElement.textContent = lives;
+        }
+    }
+
     gridContainer.addEventListener("click", (event) => {
         if (!selectedBlock) return;
 
@@ -304,8 +413,120 @@ document.addEventListener("DOMContentLoaded", () => {
                 generateBlocks();
                 placedBlocksCount = 0;
             }
+
+            updateScore(calculateBlockScore(shape)); // Add points based on block size
+
+            checkAndBreakLines();
+
+            if (!hasValidMoves()) {
+                if (lives > 0) {
+                    showReshuffleDialog();
+                } else {
+                    resetGame();
+                }
+            }
+
+            saveGameState(); // Save game state after each move
         }
     });
+
+    function checkAndBreakLines() {
+        const rows = 8;
+        const cols = 8;
+        let breakableRows = [];
+        let breakableCols = [];
+
+        for (let row = 0; row < rows; row++) {
+            let isRowBreakable = true;
+            for (let col = 0; col < cols; col++) {
+                const cell = document.querySelector(
+                    `.square[data-row="${row}"][data-col="${col}"]`
+                );
+                if (!cell.style.backgroundColor) {
+                    isRowBreakable = false;
+                    break;
+                }
+            }
+            if (isRowBreakable) breakableRows.push(row);
+        }
+
+        for (let col = 0; col < cols; col++) {
+            let isColBreakable = true;
+            for (let row = 0; row < rows; row++) {
+                const cell = document.querySelector(
+                    `.square[data-row="${row}"][data-col="${col}"]`
+                );
+                if (!cell.style.backgroundColor) {
+                    isColBreakable = false;
+                    break;
+                }
+            }
+            if (isColBreakable) breakableCols.push(col);
+        }
+
+        breakableRows.forEach((row) => {
+            for (let col = 0; col < cols; col++) {
+                const cell = document.querySelector(
+                    `.square[data-row="${row}"][data-col="${col}"]`
+                );
+                cell.style.backgroundColor = "";
+            }
+        });
+
+        breakableCols.forEach((col) => {
+            for (let row = 0; row < rows; row++) {
+                const cell = document.querySelector(
+                    `.square[data-row="${row}"][data-col="${col}"]`
+                );
+                cell.style.backgroundColor = "";
+            }
+        });
+
+        if (breakableRows.length > 0 || breakableCols.length > 0) {
+            const multiplier = breakableRows.length + breakableCols.length;
+            updateScore(multiplier * 50); // Add points with multiplier for breaking lines
+        }
+    }
+
+    function hasValidMoves() {
+        const rows = 8;
+        const cols = 8;
+        const blocks = document.querySelectorAll(".block-pick");
+
+        for (let block of blocks) {
+            const shape = JSON.parse(block.dataset.shape);
+
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    let canPlace = true;
+
+                    shape.forEach((shapeRow, rIdx) => {
+                        shapeRow.forEach((cell, cIdx) => {
+                            if (cell) {
+                                const targetCell = document.querySelector(
+                                    `.square[data-row="${
+                                        row + rIdx
+                                    }"][data-col="${col + cIdx}"]`
+                                );
+                                if (
+                                    !targetCell ||
+                                    targetCell.style.backgroundColor
+                                ) {
+                                    canPlace = false;
+                                }
+                            }
+                        });
+                    });
+
+                    if (canPlace) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
 
     function initializeGrid(rows, cols) {
         gridContainer.innerHTML = "";
@@ -321,5 +542,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     initializeGrid(8, 8);
-    generateBlocks();
+
+    if (localStorage.getItem("boardState")) {
+        loadGameState();
+    } else {
+        generateBlocks();
+    }
+
+    highScoreElement.textContent = localStorage.getItem("highScore") || 0;
 });
