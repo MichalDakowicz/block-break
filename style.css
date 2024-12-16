@@ -146,16 +146,28 @@ body.dark-mode #container {
 }
 
 .block-pick {
-    width: 80%;
-    height: 33%;
-    margin: 10px;
-    background-color: var(--button-bg-color);
-    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    background-color: var(--button-bg-color);
+    width: 80%;
+    height: 33%;
+    margin: 10px;
+    position: relative;
+    overflow: hidden;
     cursor: pointer;
     transition: background-color 0.3s ease;
+}
+
+.block-pick div div {
+    border: 1px solid var(--border-color);
+    box-sizing: border-box;
+}
+
+.block-pick:hover {
+    background-color: var(--button-hover-bg-color);
 }
 
 .block-pick:hover {
@@ -170,6 +182,12 @@ body.dark-mode #container {
 .item {
     display: flex;
     flex-direction: row;
+}
+.selected {
+    border: 2px solid #cacaca;
+}
+body.dark-mode .selected {
+    border: 2px solid #2a2a2a;
 }
 
 /* Media Queries */
