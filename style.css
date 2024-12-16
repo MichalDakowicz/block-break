@@ -19,7 +19,6 @@
 }
 body {
     font-family: "Nunito Sans", sans-serif;
-    padding: 2rem;
     background-color: var(--background-color);
     color: var(--text-color);
     transition: background-color 0.3s ease, color 0.3s ease;
@@ -27,7 +26,8 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
+    max-height: 100vh;
+    margin: 0;
 }
 body.dark-mode {
     --background-color: #333;
@@ -61,7 +61,6 @@ button:hover {
 
 .container {
     max-width: 800px;
-    margin: 0 auto;
     padding: 20px;
     border: 1px solid var(--border-color);
     border-radius: 30px;
@@ -73,6 +72,10 @@ button:hover {
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 body.dark-mode #container {
@@ -222,13 +225,19 @@ body.dark-mode .selected {
     }
     #dark-mode-toggle {
         position: absolute;
-        bottom: 10px;
-        left: 10px;
+        bottom: -25px;
+        left: 0;
         justify-content: flex-start;
     }
     #block1,
     #block2 {
         margin-bottom: 10px;
         margin-right: 0;
+    }
+    .block-pick div div {
+        border: 1px solid var(--border-color);
+        box-sizing: border-box;
+        width: 10px !important;
+        height: 10px !important;
     }
 }
