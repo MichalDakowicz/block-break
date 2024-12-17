@@ -7,17 +7,21 @@
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
+        <div id="refresh">
+            <img id="refresh-icon" src="img/refresh_light.svg" alt="Refresh Icon" />
+            <h2>Reset</h2>
+        </div>
         <div class="container">
             <div id="top">
                 <div id="scores">
                     <div class="item">
-                        <img src="img/crown.svg" />
+                        <img src="img/crown.svg" alt="Crown Icon" />
                         <h2 id="high-score">0</h2>
                     </div>
                     <h1 id="score">0</h1>
                     <div class="item">
                         <h2 id="lives">3</h2>
-                        <img src="img/heart.svg" />
+                        <img src="img/heart.svg" alt="Heart Icon" />
                     </div>
                 </div>
 
@@ -29,88 +33,25 @@
             </div>
 
             <div id="game">
-                <div id="squares">
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
+                <div id="squares"></div>
 
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                    <div class="square"></div>
-                </div>
-
-                <div id="block-select">
-                    <div id="block1" class="block-pick"></div>
-                    <div id="block2" class="block-pick"></div>
-                    <div id="block3" class="block-pick"></div>
-                </div>
+                <div id="block-select"></div>
             </div>
-            <button id="reset-game" style="display: none">Reset Game</button>
+
+            <div id="game-over" class="hidden">
+                <h2>Game Over</h2>
+                <p>No more valid moves!</p>
+                <button id="reshuffle-blocks">Reshuffle (-1 Life)</button>
+            </div>
+
+            <div id="game-over-no-lives" class="hidden">
+                <h2>Game Over</h2>
+                <h3>Score</h3>
+                <h3 id="score"></h3>
+                <p>No more lives!</p>
+                <button id="reset-game-no-lives">Reset Game</button>
+            </div>
         </div>
+        <script src="script.js"></script>
     </body>
-    <script src="script.js"></script>
 </html>

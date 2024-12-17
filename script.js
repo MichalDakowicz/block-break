@@ -22,6 +22,60 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const blocksContainer = document.getElementById("block-select");
     const gridContainer = document.getElementById("squares");
+    const gameOverDialog = document.getElementById("game-over");
+    const reshuffleButton = document.getElementById("reshuffle-blocks");
+    const gameOverNoLivesDialog = document.getElementById("game-over-no-lives");
+    const resetButtonGameOverDialog = document.getElementById(
+        "reset-game-no-lives"
+    );
+
+    let isLosingReshuffle = false; // Add a flag to indicate losing reshuffle
+
+    reshuffleButton.addEventListener("click", () => {
+        if (blocksContainer.children.length === 0 || isLosingReshuffle) {
+            // Check if blocks are unavailable or it's a losing reshuffle
+            if (lives > 0) {
+                lives--;
+                livesElement.textContent = lives;
+                gameOverDialog.classList.add("hidden");
+                isLosingReshuffle = true; // Set flag before generating blocks
+                generateBlocks(); // Regenerate after reshuffle
+
+                if (!hasValidMoves() && lives > 0) {
+                    showGameOverDialog();
+                } else if (!hasValidMoves() && lives <= 0) {
+                    showGameOverNoLivesDialog();
+                }
+            } else {
+                showGameOverNoLivesDialog(); // Game over, no lives left
+            }
+        } else {
+            console.error(
+                "Cannot reshuffle blocks while existing blocks are available."
+            );
+        }
+    });
+
+    resetButtonGameOverDialog.addEventListener("click", resetGame);
+
+    function showGameOverDialog() {
+        if (lives > 0) { // Ensure lives are available before showing the dialog
+            isLosingReshuffle = true; // Set flag during losing reshuffle
+            gameOverDialog.classList.remove("hidden");
+        }
+    }
+
+    function hideGameOverDialog() {
+        gameOverDialog.classList.add("hidden");
+    }
+
+    function showGameOverNoLivesDialog() {
+        gameOverNoLivesDialog.classList.remove("hidden");
+    }
+
+    function hideGameOverNoLivesDialog() {
+        gameOverNoLivesDialog.classList.add("hidden");
+    }
 
     if (!gridContainer) {
         console.error("Grid container is missing in the HTML.");
@@ -185,7 +239,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const livesElement = document.getElementById("lives");
 
     const resetButton = document.getElementById("reset-game");
-    resetButton.addEventListener("click", resetGame);
+    // Remove the following lines to eliminate errors due to missing 'reset-game' element
+    // if (resetButton) {
+    //     resetButton.addEventListener("click", resetGame);
+    // }
 
     let initialBlocksGenerated = false;
 
@@ -214,15 +271,29 @@ document.addEventListener("DOMContentLoaded", () => {
             "Game Over! Do you want to reshuffle the blocks and continue? This will remove 1 life."
         );
         if (reshuffle) {
-            lives -= 1; // Set lives to 1 since the user chose to reshuffle
-            livesElement.textContent = lives;
-            generateBlocks();
+            if (lives > 0) {
+                lives -= 1;
+                livesElement.textContent = lives;
+                isLosingReshuffle = true; // Set flag before generating blocks
+                generateBlocks(); // Regenerate blocks
+
+                if (!hasValidMoves() && lives > 0) {
+                    showReshuffleDialog(); // Attempt to reshuffle again
+                } else if (!hasValidMoves() && lives <= 0) {
+                    showGameOverNoLivesDialog();
+                }
+            } else {
+                showGameOverNoLivesDialog();
+            }
         } else {
-            resetGame();
+            showGameOverNoLivesDialog();
         }
     }
 
     function resetGame() {
+        hideGameOverDialog(); // Hide dialog when resetting the game
+        hideGameOverNoLivesDialog(); // Hide dialog when resetting the game
+        blocksContainer.innerHTML = "";
         score = 0;
         lives = 3;
         scoreElement.textContent = score;
@@ -234,23 +305,47 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.removeItem("blockSelectState");
         localStorage.removeItem("score");
         localStorage.removeItem("lives");
+        initialBlocksGenerated = false; // Reset this flag
+        isLosingReshuffle = false; // Reset the reshuffle flag
     }
 
     // Generate random blocks
     function generateBlocks() {
+        if (blocksContainer.children.length > 0 && !isLosingReshuffle) {
+            console.error(
+                "Cannot generate new blocks while existing blocks are available."
+            );
+            return;
+        }
+
         blocksContainer.innerHTML = "";
 
-        for (let i = 0; i < 3; i++) {
-            const blockShape =
-                blockShapes[Math.floor(Math.random() * blockShapes.length)];
-            const blockColor = getRandomColor();
-            const blockElement = createBlockElement(blockShape, blockColor);
-            blockElement.classList.add("block-pick");
-            blockElement.dataset.index = i;
-            blockElement.dataset.shape = JSON.stringify(blockShape);
-            blockElement.dataset.color = blockColor;
-            blocksContainer.appendChild(blockElement);
+        let attempts = 0;
+        const maxAttempts = 100;
 
+        for (let i = 0; i < 3; i++) {
+            let blockShape, blockColor, blockElement;
+            do {
+                blockShape =
+                    blockShapes[Math.floor(Math.random() * blockShapes.length)];
+                blockColor = getRandomColor();
+                blockElement = createBlockElement(blockShape, blockColor);
+                blockElement.classList.add("block-pick");
+                blockElement.dataset.index = i;
+                blockElement.dataset.shape = JSON.stringify(blockShape);
+                blockElement.dataset.color = blockColor;
+                attempts++;
+            } while (!canPlaceBlock(blockShape) && attempts < maxAttempts);
+
+            if (attempts >= maxAttempts) {
+                console.error(
+                    "Unable to generate placeable blocks after maximum attempts."
+                );
+                showGameOverNoLivesDialog();
+                return;
+            }
+
+            blocksContainer.appendChild(blockElement);
             blockElement.addEventListener("click", () =>
                 selectBlock(blockElement)
             );
@@ -259,10 +354,50 @@ document.addEventListener("DOMContentLoaded", () => {
         saveGameState(); // Save game state after generating new blocks
 
         if (initialBlocksGenerated && !hasValidMoves()) {
-            showReshuffleDialog();
+            if (lives > 0) {
+                showReshuffleDialog(); // Use the updated dialog
+            } else {
+                showGameOverNoLivesDialog(); // Ensure game over is shown when no lives
+            }
         } else {
             initialBlocksGenerated = true;
+            isLosingReshuffle = false; // Reset the reshuffle flag after successful generation
         }
+    }
+
+    function canPlaceBlock(shape) {
+        const rows = 8;
+        const cols = 8;
+
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                let canPlace = true;
+
+                shape.forEach((shapeRow, rIdx) => {
+                    shapeRow.forEach((cell, cIdx) => {
+                        if (cell) {
+                            const targetCell = document.querySelector(
+                                `.square[data-row="${row + rIdx}"][data-col="${
+                                    col + cIdx
+                                }"]`
+                            );
+                            if (
+                                !targetCell ||
+                                targetCell.style.backgroundColor
+                            ) {
+                                canPlace = false;
+                            }
+                        }
+                    });
+                });
+
+                if (canPlace) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     function createBlockElement(shape, color) {
@@ -362,6 +497,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    let reshuffled = false;
+
     gridContainer.addEventListener("click", (event) => {
         if (!selectedBlock) return;
 
@@ -418,11 +555,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             checkAndBreakLines();
 
-            if (!hasValidMoves()) {
+            if (!hasValidMoves() && initialBlocksGenerated) {
                 if (lives > 0) {
-                    showReshuffleDialog();
+                    showGameOverDialog(); // Show the dialog if lives are available
                 } else {
-                    resetGame();
+                    showGameOverNoLivesDialog(); // Show game over when no lives left
                 }
             }
 
@@ -550,4 +687,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     highScoreElement.textContent = localStorage.getItem("highScore") || 0;
+
+    const refreshButton = document.getElementById("refresh");
+    const refreshIcon = document.getElementById("refresh-icon");
+
+    // Function to update the refresh icon based on dark mode
+    function updateRefreshIcon() {
+        if (body.classList.contains("dark-mode")) {
+            refreshIcon.src = "img/refresh_dark.svg";
+        } else {
+            refreshIcon.src = "img/refresh_light.svg";
+        }
+    }
+
+    // Initial icon setup
+    updateRefreshIcon();
+
+    // Update icon when dark mode is toggled
+    darkModeToggle.addEventListener("change", updateRefreshIcon);
+
+    // Make refresh button clickable to reset the game
+    refreshButton.addEventListener("click", resetGame);
 });
