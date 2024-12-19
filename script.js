@@ -57,6 +57,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     resetButtonGameOverDialog.addEventListener("click", resetGame);
 
+    const resetButtonGameOver = document.getElementById("reset-game-no-lives"); // Added reference for reset button in game-over dialog
+    if (resetButtonGameOver) {
+        resetButtonGameOver.addEventListener("click", resetGame); // Added event listener
+    }
+
     function showGameOverDialog() {
         if (hasValidMoves()) {
             generateBlocks();
