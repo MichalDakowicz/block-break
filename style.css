@@ -1,4 +1,3 @@
-/* with dark mode and color variables, make responsive */
 @import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap");
 
 :root {
@@ -111,6 +110,7 @@ body.dark-mode #container {
     justify-content: center;
     font-size: 1.5rem;
     color: var(--text-color);
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
 }
 
 #block-select {
@@ -129,9 +129,9 @@ body.dark-mode #container {
     width: 640px;
     display: flex;
     flex: 1;
-    justify-content: space-between; /* Change from space-around to space-between */
+    justify-content: space-between;
     align-items: center;
-    position: relative; /* Add position relative to enable absolute positioning of score */
+    position: relative;
     margin-right: 20px;
 }
 
@@ -139,7 +139,7 @@ body.dark-mode #container {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    margin: 0; /* Remove default margins */
+    margin: 0;
 }
 
 #top {
@@ -303,7 +303,27 @@ body.dark-mode #reset-game-no-lives:hover {
     margin-top: 25px;
 }
 
-/* Media Queries */
+.preview {
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px dashed var(--text-color);
+}
+
+.square[data-row="0"][data-col="0"] {
+    border-top-left-radius: 10px;
+}
+
+.square[data-row="0"][data-col="7"] {
+    border-top-right-radius: 10px;
+}
+
+.square[data-row="7"][data-col="0"] {
+    border-bottom-left-radius: 10px;
+}
+
+.square[data-row="7"][data-col="7"] {
+    border-bottom-right-radius: 10px;
+}
+
 @media screen and (max-width: 600px) {
     #refresh h2 {
         margin: 5px;
@@ -322,6 +342,7 @@ body.dark-mode #reset-game-no-lives:hover {
     .square {
         width: 38px;
         height: 38px;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
     }
     #block-select {
         width: 320px;
@@ -337,7 +358,8 @@ body.dark-mode #reset-game-no-lives:hover {
         margin: 10px;
     }
     #scores {
-        width: 240px;
+        width: 320px;
+        margin-right: 0;
     }
     #dark-mode-toggle {
         position: absolute;

@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const darkModeToggle = document.getElementById("dark-mode");
     const body = document.body;
 
-    // Load dark mode preference from local storage
     if (darkModeToggle) {
         darkModeToggle.addEventListener("change", () => {
             if (darkModeToggle.checked) {
@@ -25,29 +24,29 @@ document.addEventListener("DOMContentLoaded", () => {
     const gameOverDialog = document.getElementById("game-over");
     const reshuffleButton = document.getElementById("reshuffle-blocks");
     const gameOverNoLivesDialog = document.getElementById("game-over-no-lives");
-    const resetButtonGameOverDialog = document.getElementById(
-        "reset-game-no-lives"
-    );
+    const resetButtonGameOverDialog = document.getElementById("reset-game-no-lives-dialog"); // Updated ID
+    const scoreEndElement = document.getElementById("score-end"); // Added reference for new score ID
 
-    let isLosingReshuffle = false; // Add a flag to indicate losing reshuffle
+    let isLosingReshuffle = false;
 
     reshuffleButton.addEventListener("click", () => {
         if (blocksContainer.children.length === 0 || isLosingReshuffle) {
-            // Check if blocks are unavailable or it's a losing reshuffle
             if (lives > 0) {
                 lives--;
                 livesElement.textContent = lives;
                 gameOverDialog.classList.add("hidden");
-                isLosingReshuffle = true; // Set flag before generating blocks
-                generateBlocks(); // Regenerate after reshuffle
+                isLosingReshuffle = true;
+                generateBlocks();
 
                 if (!hasValidMoves() && lives > 0) {
                     showGameOverDialog();
                 } else if (!hasValidMoves() && lives <= 0) {
                     showGameOverNoLivesDialog();
+                } else {
+                    initialBlocksGenerated = true;
                 }
             } else {
-                showGameOverNoLivesDialog(); // Game over, no lives left
+                showGameOverNoLivesDialog();
             }
         } else {
             console.error(
@@ -56,12 +55,16 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    resetButtonGameOverDialog.addEventListener("click", resetGame);
+    resetButtonGameOverDialog.addEventListener("click", resetGame); // Updated event listener
 
     function showGameOverDialog() {
-        if (lives > 0) { // Ensure lives are available before showing the dialog
-            isLosingReshuffle = true; // Set flag during losing reshuffle
-            gameOverDialog.classList.remove("hidden");
+        if (hasValidMoves()) {
+            generateBlocks();
+        } else {
+            if (lives > 0) {
+                isLosingReshuffle = true;
+                gameOverDialog.classList.remove("hidden");
+            }
         }
     }
 
@@ -79,154 +82,153 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!gridContainer) {
         console.error("Grid container is missing in the HTML.");
-        return; // Prevent further script execution if gridContainer is missing
+        return;
     }
 
-    // Define block shapes (2D arrays)
     const blockShapes = [
-        [[1]], // Single block
+        [[1]],
 
-        [[1, 1]], // Small line (2 blocks)
-        [[1], [1]], // Vertical line (2 blocks)
+        [[1, 1]],
+        [[1], [1]],
 
-        [[1, 1, 1]], // Long line (3 blocks)
-        [[1], [1], [1]], // Vertical line (3 blocks)
+        [[1, 1, 1]],
+        [[1], [1], [1]],
 
-        [[1, 1, 1, 1]], // Long line (4 blocks)
-        [[1], [1], [1], [1]], // Vertical line (4 blocks)
+        [[1, 1, 1, 1]],
+        [[1], [1], [1], [1]],
 
         [
             [1, 1, 1],
             [0, 0, 1],
-        ], // L-shape
+        ],
         [
             [1, 1, 1],
             [1, 0, 0],
-        ], // Reverse L-shape
+        ],
         [
             [0, 0, 1],
             [1, 1, 1],
-        ], // Flipped L-shape
+        ],
         [
             [1, 0, 0],
             [1, 1, 1],
-        ], // Flipped Reverse L-shape
+        ],
         [
             [1, 0],
             [1, 0],
             [1, 1],
-        ], // L-shape rotated 90 degrees
+        ],
         [
             [0, 1],
             [0, 1],
             [1, 1],
-        ], // Reverse L-shape rotated 90 degrees
+        ],
         [
             [1, 1],
             [0, 1],
             [0, 1],
-        ], // Flipped L-shape rotated 90 degrees
+        ],
         [
             [1, 1],
             [1, 0],
             [1, 0],
-        ], // Flipped Reverse L-shape rotated 90 degrees
+        ],
 
         [
             [1, 1],
             [1, 0],
-        ], // Small L-shape
+        ],
         [
             [1, 1],
             [0, 1],
-        ], // Small L-shape rotated 90 degrees
+        ],
         [
             [1, 0],
             [1, 1],
-        ], // Flipped Small L-shape
+        ],
         [
             [0, 1],
             [1, 1],
-        ], // Flipped Small Reverse L-shape
+        ],
 
         [
             [1, 1, 1],
             [0, 1, 0],
-        ], // T-shape
+        ],
         [
             [1, 0],
             [1, 1],
             [1, 0],
-        ], // T-shape rotated 90 degrees
+        ],
         [
             [0, 1, 0],
             [1, 1, 1],
-        ], // T-shape rotated 180 degrees
+        ],
         [
             [0, 1],
             [1, 1],
             [0, 1],
-        ], // T-shape rotated 270 degrees
+        ],
 
         [
             [1, 1],
             [1, 1],
             [1, 1],
-        ], // Rectangle
+        ],
         [
             [1, 1, 1],
             [1, 1, 1],
-        ], // Rotated Rectangle
+        ],
 
         [
             [1, 1],
             [1, 1],
-        ], // Small Square
+        ],
         [
             [1, 1, 1],
             [1, 1, 1],
             [1, 1, 1],
-        ], // Big Square
+        ],
         [
             [1, 1, 0],
             [0, 1, 1],
-        ], // Z-shape
+        ],
         [
             [0, 1],
             [1, 1],
             [1, 0],
-        ], // Z-shape rotated 90 degrees
+        ],
         [
             [0, 1, 1],
             [1, 1, 0],
-        ], // S-shape
+        ],
         [
             [1, 0],
             [1, 1],
             [0, 1],
-        ], // S-shape rotated 90 degrees
-        [[1, 1, 1, 1, 1]], // Long line (5 blocks)
-        [[1], [1], [1], [1], [1]], // Vertical line (5 blocks)
+        ],
+        [[1, 1, 1, 1, 1]],
+        [[1], [1], [1], [1], [1]],
         [
             [1, 0, 0],
             [1, 0, 0],
             [1, 1, 1],
-        ], // Big L-shape
+        ],
         [
             [0, 0, 1],
             [0, 0, 1],
             [1, 1, 1],
-        ], // Big Reverse L-shape
+        ],
         [
             [1, 1, 1],
             [0, 0, 1],
             [0, 0, 1],
-        ], // Big Flipped L-shape
+        ],
         [
             [1, 1, 1],
             [1, 0, 0],
             [1, 0, 0],
-        ], // Big Flipped Reverse L-shape
+        ],
     ];
 
     let selectedBlock = null;
@@ -239,10 +241,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const livesElement = document.getElementById("lives");
 
     const resetButton = document.getElementById("reset-game");
-    // Remove the following lines to eliminate errors due to missing 'reset-game' element
-    // if (resetButton) {
-    //     resetButton.addEventListener("click", resetGame);
-    // }
 
     let initialBlocksGenerated = false;
 
@@ -263,7 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (cell) count++;
             });
         });
-        return count * 10; // Each square in the block is worth 10 points
+        return count * 10;
     }
 
     function showReshuffleDialog() {
@@ -274,13 +272,15 @@ document.addEventListener("DOMContentLoaded", () => {
             if (lives > 0) {
                 lives -= 1;
                 livesElement.textContent = lives;
-                isLosingReshuffle = true; // Set flag before generating blocks
-                generateBlocks(); // Regenerate blocks
+                isLosingReshuffle = true;
+                generateBlocks();
 
                 if (!hasValidMoves() && lives > 0) {
-                    showReshuffleDialog(); // Attempt to reshuffle again
+                    showReshuffleDialog();
                 } else if (!hasValidMoves() && lives <= 0) {
                     showGameOverNoLivesDialog();
+                } else {
+                    initialBlocksGenerated = true;
                 }
             } else {
                 showGameOverNoLivesDialog();
@@ -291,8 +291,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function resetGame() {
-        hideGameOverDialog(); // Hide dialog when resetting the game
-        hideGameOverNoLivesDialog(); // Hide dialog when resetting the game
+        hideGameOverDialog();
+        hideGameOverNoLivesDialog();
         blocksContainer.innerHTML = "";
         score = 0;
         lives = 3;
@@ -305,11 +305,10 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.removeItem("blockSelectState");
         localStorage.removeItem("score");
         localStorage.removeItem("lives");
-        initialBlocksGenerated = false; // Reset this flag
-        isLosingReshuffle = false; // Reset the reshuffle flag
+        initialBlocksGenerated = false;
+        isLosingReshuffle = false;
     }
 
-    // Generate random blocks
     function generateBlocks() {
         if (blocksContainer.children.length > 0 && !isLosingReshuffle) {
             console.error(
@@ -351,17 +350,36 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         }
 
-        saveGameState(); // Save game state after generating new blocks
+        saveGameState();
 
         if (initialBlocksGenerated && !hasValidMoves()) {
             if (lives > 0) {
-                showReshuffleDialog(); // Use the updated dialog
+                showReshuffleDialog();
             } else {
-                showGameOverNoLivesDialog(); // Ensure game over is shown when no lives
+                showGameOverNoLivesDialog();
             }
         } else {
             initialBlocksGenerated = true;
-            isLosingReshuffle = false; // Reset the reshuffle flag after successful generation
+            isLosingReshuffle = false;
+        }
+    }
+
+    function generateBlocksForce() {
+        blocksContainer.innerHTML = "";
+
+        for (let i = 0; i < 3; i++) {
+            const blockShape =
+                blockShapes[Math.floor(Math.random() * blockShapes.length)];
+            const blockColor = getRandomColor();
+            const blockElement = createBlockElement(blockShape, blockColor);
+            blockElement.classList.add("block-pick");
+            blockElement.dataset.index = i;
+            blockElement.dataset.shape = JSON.stringify(blockShape);
+            blockElement.dataset.color = blockColor;
+            blocksContainer.appendChild(blockElement);
+            blockElement.addEventListener("click", () =>
+                selectBlock(blockElement)
+            );
         }
     }
 
@@ -377,9 +395,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     shapeRow.forEach((cell, cIdx) => {
                         if (cell) {
                             const targetCell = document.querySelector(
-                                `.square[data-row="${row + rIdx}"][data-col="${
-                                    col + cIdx
-                                }"]`
+                                `.square[data-row="${row + rIdx}"][data-col="${col + cIdx}"]`
                             );
                             if (
                                 !targetCell ||
@@ -494,6 +510,7 @@ document.addEventListener("DOMContentLoaded", () => {
             lives = parseInt(localStorage.getItem("lives"));
             scoreElement.textContent = score;
             livesElement.textContent = lives;
+            scoreEndElement.textContent = score; // Added to display score in end dialog
         }
     }
 
@@ -517,9 +534,7 @@ document.addEventListener("DOMContentLoaded", () => {
             row.forEach((cell, cIdx) => {
                 if (cell) {
                     const targetCell = document.querySelector(
-                        `.square[data-row="${startRow + rIdx}"][data-col="${
-                            startCol + cIdx
-                        }"]`
+                        `.square[data-row="${startRow + rIdx}"][data-col="${startCol + cIdx}"]`
                     );
                     if (!targetCell || targetCell.style.backgroundColor) {
                         canPlace = false;
@@ -533,9 +548,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 row.forEach((cell, cIdx) => {
                     if (cell) {
                         const targetCell = document.querySelector(
-                            `.square[data-row="${startRow + rIdx}"][data-col="${
-                                startCol + cIdx
-                            }"]`
+                            `.square[data-row="${startRow + rIdx}"][data-col="${startCol + cIdx}"]`
                         );
                         targetCell.style.backgroundColor = color;
                     }
@@ -551,19 +564,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 placedBlocksCount = 0;
             }
 
-            updateScore(calculateBlockScore(shape)); // Add points based on block size
+            updateScore(calculateBlockScore(shape));
 
             checkAndBreakLines();
 
             if (!hasValidMoves() && initialBlocksGenerated) {
-                if (lives > 0) {
-                    showGameOverDialog(); // Show the dialog if lives are available
+                if (blocksContainer.children.length === 0) {
+                    generateBlocksForce();
                 } else {
-                    showGameOverNoLivesDialog(); // Show game over when no lives left
+                    if (lives > 0) {
+                        showGameOverDialog();
+                    } else {
+                        showGameOverNoLivesDialog();
+                    }
                 }
             }
 
-            saveGameState(); // Save game state after each move
+            saveGameState();
         }
     });
 
@@ -621,7 +638,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (breakableRows.length > 0 || breakableCols.length > 0) {
             const multiplier = breakableRows.length + breakableCols.length;
-            updateScore(multiplier * 50); // Add points with multiplier for breaking lines
+            updateScore(multiplier * 50);
         }
     }
 
@@ -641,9 +658,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         shapeRow.forEach((cell, cIdx) => {
                             if (cell) {
                                 const targetCell = document.querySelector(
-                                    `.square[data-row="${
-                                        row + rIdx
-                                    }"][data-col="${col + cIdx}"]`
+                                    `.square[data-row="${row + rIdx}"][data-col="${col + cIdx}"]`
                                 );
                                 if (
                                     !targetCell ||
@@ -691,7 +706,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const refreshButton = document.getElementById("refresh");
     const refreshIcon = document.getElementById("refresh-icon");
 
-    // Function to update the refresh icon based on dark mode
     function updateRefreshIcon() {
         if (body.classList.contains("dark-mode")) {
             refreshIcon.src = "img/refresh_dark.svg";
@@ -700,12 +714,59 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Initial icon setup
     updateRefreshIcon();
 
-    // Update icon when dark mode is toggled
     darkModeToggle.addEventListener("change", updateRefreshIcon);
 
-    // Make refresh button clickable to reset the game
     refreshButton.addEventListener("click", resetGame);
+
+    function showPreview(startRow, startCol) {
+        clearPreview();
+        if (!selectedBlock) return;
+
+        const shape = JSON.parse(selectedBlock.dataset.shape);
+        let canPlace = true;
+
+        shape.forEach((row, rIdx) => {
+            row.forEach((cell, cIdx) => {
+                if (cell) {
+                    const targetRow = startRow + rIdx;
+                    const targetCol = startCol + cIdx;
+                    const targetCell = document.querySelector(
+                        `.square[data-row="${targetRow}"][data-col="${targetCol}"]`
+                    );
+                    if (targetCell) {
+                        targetCell.classList.add("preview");
+                    } else {
+                        canPlace = false;
+                    }
+                }
+            });
+        });
+
+        if (!canPlace) {
+            clearPreview();
+        }
+    }
+
+    function clearPreview() {
+        document.querySelectorAll(".preview").forEach((cell) => {
+            cell.classList.remove("preview");
+        });
+    }
+
+    gridContainer.addEventListener("mousemove", (event) => {
+        const cell = event.target;
+        if (!cell.classList.contains("square")) {
+            clearPreview();
+            return;
+        }
+        const startRow = parseInt(cell.dataset.row);
+        const startCol = parseInt(cell.dataset.col);
+        showPreview(startRow, startCol);
+    });
+
+    gridContainer.addEventListener("mouseleave", () => {
+        clearPreview();
+    });
 });
