@@ -247,6 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function updateScore(points) {
         score += points;
         scoreElement.textContent = score;
+        scoreEndElement.textContent = score;
         const highScore = localStorage.getItem("highScore") || 0;
         if (score > highScore) {
             localStorage.setItem("highScore", score);
@@ -510,7 +511,7 @@ document.addEventListener("DOMContentLoaded", () => {
             lives = parseInt(localStorage.getItem("lives"));
             scoreElement.textContent = score;
             livesElement.textContent = lives;
-            scoreEndElement.textContent = score; // Added to display score in end dialog
+            scoreEndElement.textContent = score;
         }
     }
 
