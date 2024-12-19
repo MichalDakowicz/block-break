@@ -171,6 +171,15 @@ body.dark-mode #container {
     overflow: hidden;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    user-select: none;
+}
+
+.block-pick[draggable="true"] {
+    cursor: grab;
+}
+
+.block-pick[draggable="true"]:active {
+    cursor: grabbing;
 }
 
 .block-pick div div {
@@ -304,9 +313,26 @@ body.dark-mode #reset-game-no-lives:hover {
     margin-top: 25px;
 }
 
-.preview {
+.preview:not(.preview-wrong) {
     background-color: rgba(0, 0, 0, 0.2);
     border: 1px dashed var(--text-color);
+    filter: brightness(0.8);
+}
+
+.preview-wrong {
+    position: relative;
+}
+
+.preview-wrong::after {
+    content: "";
+    position: absolute;
+    top: -2.5px;
+    left:-2.5px;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 0, 0, 0.2);
+    border: 2px dashed #aa1515;
+    pointer-events: none;
 }
 
 .square[data-row="0"][data-col="0"] {

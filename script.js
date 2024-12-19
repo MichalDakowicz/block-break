@@ -24,7 +24,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const gameOverDialog = document.getElementById("game-over");
     const reshuffleButton = document.getElementById("reshuffle-blocks");
     const gameOverNoLivesDialog = document.getElementById("game-over-no-lives");
-    const resetButtonGameOverDialog = document.getElementById("reset-game-no-lives-dialog");
+    const resetButtonGameOverDialog = document.getElementById(
+        "reset-game-no-lives-dialog"
+    );
     const scoreEndElement = document.getElementById("score-end");
 
     let isLosingReshuffle = false;
@@ -401,7 +403,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     shapeRow.forEach((cell, cIdx) => {
                         if (cell) {
                             const targetCell = document.querySelector(
-                                `.square[data-row="${row + rIdx}"][data-col="${col + cIdx}"]`
+                                `.square[data-row="${row + rIdx}"][data-col="${
+                                    col + cIdx
+                                }"]`
                             );
                             if (
                                 !targetCell ||
@@ -447,6 +451,8 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             blockDiv.appendChild(rowDiv);
         });
+
+        blockDiv.draggable = true; // Make the block draggable
 
         return blockDiv;
     }
@@ -540,7 +546,9 @@ document.addEventListener("DOMContentLoaded", () => {
             row.forEach((cell, cIdx) => {
                 if (cell) {
                     const targetCell = document.querySelector(
-                        `.square[data-row="${startRow + rIdx}"][data-col="${startCol + cIdx}"]`
+                        `.square[data-row="${startRow + rIdx}"][data-col="${
+                            startCol + cIdx
+                        }"]`
                     );
                     if (!targetCell || targetCell.style.backgroundColor) {
                         canPlace = false;
@@ -554,7 +562,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 row.forEach((cell, cIdx) => {
                     if (cell) {
                         const targetCell = document.querySelector(
-                            `.square[data-row="${startRow + rIdx}"][data-col="${startCol + cIdx}"]`
+                            `.square[data-row="${startRow + rIdx}"][data-col="${
+                                startCol + cIdx
+                            }"]`
                         );
                         targetCell.style.backgroundColor = color;
                     }
@@ -587,6 +597,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             saveGameState();
+            clearPreview(); // Hide the preview instantly after placing
         }
     });
 
@@ -664,7 +675,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         shapeRow.forEach((cell, cIdx) => {
                             if (cell) {
                                 const targetCell = document.querySelector(
-                                    `.square[data-row="${row + rIdx}"][data-col="${col + cIdx}"]`
+                                    `.square[data-row="${
+                                        row + rIdx
+                                    }"][data-col="${col + cIdx}"]`
                                 );
                                 if (
                                     !targetCell ||
@@ -743,6 +756,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     );
                     if (targetCell) {
                         targetCell.classList.add("preview");
+                        if (targetCell.style.backgroundColor) {
+                            canPlace = false;
+                        }
                     } else {
                         canPlace = false;
                     }
@@ -751,28 +767,416 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         if (!canPlace) {
-            clearPreview();
+            shape.forEach((row, rIdx) => {
+                row.forEach((cell, cIdx) => {
+                    if (cell) {
+                        const targetRow = startRow + rIdx;
+                        const targetCol = startCol + cIdx;
+                        const targetCell = document.querySelector(
+                            `.square[data-row="${targetRow}"][data-col="${targetCol}"]`
+                        );
+                        if (targetCell) {
+                            targetCell.classList.add("preview-wrong");
+                        }
+                    }
+                });
+            });
         }
     }
 
     function clearPreview() {
-        document.querySelectorAll(".preview").forEach((cell) => {
-            cell.classList.remove("preview");
-        });
+        document
+            .querySelectorAll(".preview, .preview-wrong")
+            .forEach((cell) => {
+                cell.classList.remove("preview", "preview-wrong");
+            });
     }
 
-    gridContainer.addEventListener("mousemove", (event) => {
-        const cell = event.target;
-        if (!cell.classList.contains("square")) {
-            clearPreview();
-            return;
+    function showSnappingPreview(startRow, startCol) {
+        clearPreview();
+        if (!draggedBlock) return;
+
+        const shape = JSON.parse(draggedBlock.dataset.shape);
+        let canPlace = true;
+
+        shape.forEach((row, rIdx) => {
+            row.forEach((cell, cIdx) => {
+                if (cell) {
+                    const targetRow = startRow + rIdx;
+                    const targetCol = startCol + cIdx;
+                    const targetCell = document.querySelector(
+                        `.square[data-row="${targetRow}"][data-col="${targetCol}"]`
+                    );
+                    if (targetCell) {
+                        targetCell.classList.add("preview");
+                        if (targetCell.style.backgroundColor) {
+                            canPlace = false;
+                        }
+                    } else {
+                        canPlace = false;
+                    }
+                }
+            });
+        });
+
+        if (!canPlace) {
+            shape.forEach((row, rIdx) => {
+                row.forEach((cell, cIdx) => {
+                    if (cell) {
+                        const targetRow = startRow + rIdx;
+                        const targetCol = startCol + cIdx;
+                        const targetCell = document.querySelector(
+                            `.square[data-row="${targetRow}"][data-col="${targetCol}"]`
+                        );
+                        if (targetCell) {
+                            targetCell.classList.add("preview-wrong");
+                        }
+                    }
+                });
+            });
         }
+    }
+
+    gridContainer.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        const cell = event.target;
+        if (cell.classList.contains("square")) {
+            const startRow = parseInt(cell.dataset.row);
+            const startCol = parseInt(cell.dataset.col);
+            showSnappingPreview(startRow, startCol);
+        }
+    });
+
+    gridContainer.addEventListener("dragleave", () => {
+        clearPreview();
+    });
+
+    gridContainer.addEventListener("drop", (event) => {
+        event.preventDefault();
+        const cell = event.target;
+        if (!draggedBlock || !cell.classList.contains("square")) return;
+
+        const shape = JSON.parse(draggedBlock.dataset.shape);
+        const color = draggedBlock.dataset.color;
+
         const startRow = parseInt(cell.dataset.row);
         const startCol = parseInt(cell.dataset.col);
-        showPreview(startRow, startCol);
+
+        let canPlace = true;
+
+        shape.forEach((row, rIdx) => {
+            row.forEach((cell, cIdx) => {
+                if (cell) {
+                    const targetCell = document.querySelector(
+                        `.square[data-row="${startRow + rIdx}"][data-col="${
+                            startCol + cIdx
+                        }"]`
+                    );
+                    if (!targetCell || targetCell.style.backgroundColor) {
+                        canPlace = false;
+                    }
+                }
+            });
+        });
+
+        if (canPlace) {
+            shape.forEach((row, rIdx) => {
+                row.forEach((cell, cIdx) => {
+                    if (cell) {
+                        const targetCell = document.querySelector(
+                            `.square[data-row="${startRow + rIdx}"][data-col="${
+                                startCol + cIdx
+                            }"]`
+                        );
+                        targetCell.style.backgroundColor = color;
+                    }
+                });
+            });
+
+            draggedBlock.remove();
+            draggedBlock = null;
+            placedBlocksCount++;
+
+            if (placedBlocksCount === 3) {
+                generateBlocks();
+                placedBlocksCount = 0;
+            }
+
+            updateScore(calculateBlockScore(shape));
+
+            checkAndBreakLines();
+
+            if (!hasValidMoves() && initialBlocksGenerated) {
+                if (blocksContainer.children.length === 0) {
+                    generateBlocksForce();
+                } else {
+                    if (lives > 0) {
+                        showGameOverDialog();
+                    } else {
+                        showGameOverNoLivesDialog();
+                    }
+                }
+            }
+
+            saveGameState();
+            clearPreview(); // Hide the preview instantly after placing
+        } else {
+            clearPreview();
+        }
+    });
+
+    gridContainer.addEventListener("dragenter", (event) => {
+        const cell = event.target;
+        if (cell.classList.contains("square")) {
+            const startRow = parseInt(cell.dataset.row);
+            const startCol = parseInt(cell.dataset.col);
+            showSnappingPreview(startRow, startCol);
+        }
+    });
+
+    let draggedBlock = null;
+
+    blocksContainer.addEventListener("dragstart", (event) => {
+        if (event.target.classList.contains("block-pick")) {
+            draggedBlock = event.target;
+            event.dataTransfer.setData(
+                "text/plain",
+                event.target.dataset.index
+            );
+
+            const shape = JSON.parse(draggedBlock.dataset.shape);
+            const color = draggedBlock.dataset.color;
+
+            const dragPreview = document.createElement("div");
+            dragPreview.style.display = "flex";
+            dragPreview.style.flexDirection = "column";
+            dragPreview.style.alignItems = "center";
+            dragPreview.style.justifyContent = "center";
+            dragPreview.style.position = "absolute";
+            dragPreview.style.top = "-9999px";
+
+            shape.forEach((row) => {
+                const rowDiv = document.createElement("div");
+                rowDiv.style.display = "flex";
+                rowDiv.style.justifyContent = "center";
+                row.forEach((cell) => {
+                    const cellDiv = document.createElement("div");
+                    cellDiv.style.width = "78px";
+                    cellDiv.style.height = "78px";
+                    cellDiv.style.margin = "0";
+                    cellDiv.style.border = "1px solid var(--border-color)";
+                    cellDiv.style.opacity = "0.5";
+                    if (cell) {
+                        cellDiv.style.backgroundColor = color;
+                    } else {
+                        cellDiv.style.visibility = "hidden";
+                    }
+                    rowDiv.appendChild(cellDiv);
+                });
+                dragPreview.appendChild(rowDiv);
+            });
+
+            document.body.appendChild(dragPreview);
+            event.dataTransfer.setDragImage(dragPreview, 0, 0);
+            setTimeout(() => document.body.removeChild(dragPreview), 0);
+        }
+    });
+
+    blocksContainer.addEventListener("dragend", () => {
+        draggedBlock = null;
+    });
+
+    gridContainer.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        const cell = event.target;
+        if (cell.classList.contains("square")) {
+            const startRow = parseInt(cell.dataset.row);
+            const startCol = parseInt(cell.dataset.col);
+            showPreview(startRow, startCol);
+        }
     });
 
     gridContainer.addEventListener("mouseleave", () => {
         clearPreview();
+    });
+
+    gridContainer.addEventListener("drop", (event) => {
+        event.preventDefault();
+        const cell = event.target;
+        if (!draggedBlock || !cell.classList.contains("square")) return;
+
+        const shape = JSON.parse(draggedBlock.dataset.shape);
+        const color = draggedBlock.dataset.color;
+
+        const startRow = parseInt(cell.dataset.row);
+        const startCol = parseInt(cell.dataset.col);
+
+        let canPlace = true;
+
+        shape.forEach((row, rIdx) => {
+            row.forEach((cell, cIdx) => {
+                if (cell) {
+                    const targetCell = document.querySelector(
+                        `.square[data-row="${startRow + rIdx}"][data-col="${
+                            startCol + cIdx
+                        }"]`
+                    );
+                    if (!targetCell || targetCell.style.backgroundColor) {
+                        canPlace = false;
+                    }
+                }
+            });
+        });
+
+        if (canPlace) {
+            shape.forEach((row, rIdx) => {
+                row.forEach((cell, cIdx) => {
+                    if (cell) {
+                        const targetCell = document.querySelector(
+                            `.square[data-row="${startRow + rIdx}"][data-col="${
+                                startCol + cIdx
+                            }"]`
+                        );
+                        targetCell.style.backgroundColor = color;
+                    }
+                });
+            });
+
+            draggedBlock.remove();
+            draggedBlock = null;
+            placedBlocksCount++;
+
+            if (placedBlocksCount === 3) {
+                generateBlocks();
+                placedBlocksCount = 0;
+            }
+
+            updateScore(calculateBlockScore(shape));
+
+            checkAndBreakLines();
+
+            if (!hasValidMoves() && initialBlocksGenerated) {
+                if (blocksContainer.children.length === 0) {
+                    generateBlocksForce();
+                } else {
+                    if (lives > 0) {
+                        showGameOverDialog();
+                    } else {
+                        showGameOverNoLivesDialog();
+                    }
+                }
+            }
+
+            saveGameState();
+            clearPreview(); // Hide the preview instantly after placing
+        } else {
+            clearPreview();
+        }
+    });
+
+    gridContainer.addEventListener("dragenter", (event) => {
+        const cell = event.target;
+        if (cell.classList.contains("square")) {
+            const startRow = parseInt(cell.dataset.row);
+            const startCol = parseInt(cell.dataset.col);
+            showPreview(startRow, startCol);
+        }
+    });
+
+    gridContainer.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        const cell = event.target;
+        if (cell.classList.contains("square")) {
+            const startRow = parseInt(cell.dataset.row);
+            const startCol = parseInt(cell.dataset.col);
+            showSnappingPreview(startRow, startCol);
+        }
+    });
+
+    gridContainer.addEventListener("dragleave", () => {
+        clearPreview();
+    });
+
+    gridContainer.addEventListener("drop", (event) => {
+        event.preventDefault();
+        const cell = event.target;
+        if (!draggedBlock || !cell.classList.contains("square")) return;
+
+        const shape = JSON.parse(draggedBlock.dataset.shape);
+        const color = draggedBlock.dataset.color;
+
+        const startRow = parseInt(cell.dataset.row);
+        const startCol = parseInt(cell.dataset.col);
+
+        let canPlace = true;
+
+        shape.forEach((row, rIdx) => {
+            row.forEach((cell, cIdx) => {
+                if (cell) {
+                    const targetCell = document.querySelector(
+                        `.square[data-row="${startRow + rIdx}"][data-col="${
+                            startCol + cIdx
+                        }"]`
+                    );
+                    if (!targetCell || targetCell.style.backgroundColor) {
+                        canPlace = false;
+                    }
+                }
+            });
+        });
+
+        if (canPlace) {
+            shape.forEach((row, rIdx) => {
+                row.forEach((cell, cIdx) => {
+                    if (cell) {
+                        const targetCell = document.querySelector(
+                            `.square[data-row="${startRow + rIdx}"][data-col="${
+                                startCol + cIdx
+                            }"]`
+                        );
+                        targetCell.style.backgroundColor = color;
+                    }
+                });
+            });
+
+            draggedBlock.remove();
+            draggedBlock = null;
+            placedBlocksCount++;
+
+            if (placedBlocksCount === 3) {
+                generateBlocks();
+                placedBlocksCount = 0;
+            }
+
+            updateScore(calculateBlockScore(shape));
+
+            checkAndBreakLines();
+
+            if (!hasValidMoves() && initialBlocksGenerated) {
+                if (blocksContainer.children.length === 0) {
+                    generateBlocksForce();
+                } else {
+                    if (lives > 0) {
+                        showGameOverDialog();
+                    } else {
+                        showGameOverNoLivesDialog();
+                    }
+                }
+            }
+
+            saveGameState();
+            clearPreview(); // Hide the preview instantly after placing
+        } else {
+            clearPreview();
+        }
+    });
+
+    gridContainer.addEventListener("dragenter", (event) => {
+        const cell = event.target;
+        if (cell.classList.contains("square")) {
+            const startRow = parseInt(cell.dataset.row);
+            const startCol = parseInt(cell.dataset.col);
+            showSnappingPreview(startRow, startCol);
+        }
     });
 });
