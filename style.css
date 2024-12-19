@@ -176,6 +176,7 @@ body.dark-mode #container {
 .block-pick div div {
     border: 1px solid var(--border-color);
     box-sizing: border-box;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
 }
 
 .block-pick:hover:not(.selected) {
@@ -375,6 +376,7 @@ body.dark-mode #reset-game-no-lives:hover {
     .block-pick div div {
         border: 1px solid var(--border-color);
         box-sizing: border-box;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
         width: 15px !important;
         height: 15px !important;
     }

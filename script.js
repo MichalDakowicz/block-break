@@ -24,8 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const gameOverDialog = document.getElementById("game-over");
     const reshuffleButton = document.getElementById("reshuffle-blocks");
     const gameOverNoLivesDialog = document.getElementById("game-over-no-lives");
-    const resetButtonGameOverDialog = document.getElementById("reset-game-no-lives-dialog"); // Updated ID
-    const scoreEndElement = document.getElementById("score-end"); // Added reference for new score ID
+    const resetButtonGameOverDialog = document.getElementById("reset-game-no-lives-dialog");
+    const scoreEndElement = document.getElementById("score-end");
 
     let isLosingReshuffle = false;
 
@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    resetButtonGameOverDialog.addEventListener("click", resetGame); // Updated event listener
+    resetButtonGameOverDialog.addEventListener("click", resetGame);
 
     function showGameOverDialog() {
         if (hasValidMoves()) {
