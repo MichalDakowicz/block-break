@@ -2,7 +2,10 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, user-scalable=no"
+        />
         <title>Block Break</title>
         <link rel="stylesheet" href="style.css" />
     </head>
@@ -36,10 +39,20 @@
                 </div>
             </div>
 
+            <div id="combo-info" class="hidden">
+                <h2>Combo: <span id="combo-count">0</span></h2>
+                <div id="combo-progress">
+                    <div id="combo-progress-bar"></div>
+                </div>
+            </div>
+
             <div id="game">
                 <div id="squares"></div>
 
-                <div id="block-select" ontouchstart="event.preventDefault();"></div>
+                <div
+                    id="block-select"
+                    ontouchstart="event.preventDefault();"
+                ></div>
             </div>
 
             <div id="game-over" class="hidden">

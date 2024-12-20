@@ -363,7 +363,41 @@ body.dark-mode #reset-game-no-lives:hover {
     border-bottom-right-radius: 10px;
 }
 
+#combo-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+#combo-info h2 {
+    margin: 0;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+#combo-progress {
+    width: 100%;
+    height: 15px;
+    background-color: var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+#combo-progress-bar {
+    height: 100%;
+    background-color: var(--green-block);
+    width: 100%;
+    transition: width 0.3s ease;
+}
+
+
 @media screen and (max-width: 600px) {
+    #combo-info {
+        width: 320px;
+    }
     #refresh h2 {
         margin: 5px;
     }

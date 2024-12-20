@@ -269,6 +269,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let initialBlocksGenerated = false;
 
+    let comboCount = 0;
+    let comboMovesLeft = 3;
+
+    const comboCountElement = document.getElementById("combo-count");
+    const comboProgressBar = document.getElementById("combo-progress-bar");
+    const comboBox = document.getElementById("combo-info");
+
+    function updateComboDisplay() {
+        comboCountElement.textContent = comboCount;
+        const progressPercentage = (comboMovesLeft / 3) * 100;
+        comboProgressBar.style.width = `${progressPercentage}%`;
+        if (comboMovesLeft == 0) {
+            comboProgressBar.style.width = "100%";
+        }
+    }
+
     function updateScore(points) {
         score += points;
         scoreElement.textContent = score;
@@ -287,7 +303,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (cell) count++;
             });
         });
-        return count * 10;
+        return count;
+    }
+
+    function calculateComboBonus() {
+        if (comboCount >= 2) {
+            return (comboCount - 1) * 10;
+        }
+        return 0;
     }
 
     function showReshuffleDialog() {
@@ -322,10 +345,13 @@ document.addEventListener("DOMContentLoaded", () => {
         blocksContainer.innerHTML = "";
         score = 0;
         lives = 3;
+        comboCount = 0;
+        comboMovesLeft = 3;
         scoreElement.textContent = score;
         livesElement.textContent = lives;
         initializeGrid(8, 8);
         generateBlocks();
+        updateComboDisplay();
         localStorage.removeItem("boardState");
         localStorage.removeItem("blocksState");
         localStorage.removeItem("blockSelectState");
@@ -653,6 +679,18 @@ document.addEventListener("DOMContentLoaded", () => {
             if (isColBreakable) breakableCols.push(col);
         }
 
+        if (breakableRows.length > 0 || breakableCols.length > 0) {
+            comboCount++;
+            comboMovesLeft = 3;
+        } else {
+            comboMovesLeft--;
+            if (comboMovesLeft <= 0) {
+                comboCount = 0;
+            }
+        }
+
+        updateComboDisplay();
+
         breakableRows.forEach((row) => {
             for (let col = 0; col < cols; col++) {
                 const cell = document.querySelector(
@@ -673,7 +711,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (breakableRows.length > 0 || breakableCols.length > 0) {
             const multiplier = breakableRows.length + breakableCols.length;
-            updateScore(multiplier * 50);
+            const comboBonus = calculateComboBonus();
+            updateScore(multiplier * 10 + comboBonus);
         }
     }
 
