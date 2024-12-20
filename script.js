@@ -761,7 +761,9 @@ document.addEventListener("DOMContentLoaded", () => {
         clearPreview();
         if (!selectedBlock && !touchDraggingBlock) return;
 
-        const shape = selectedBlock ? JSON.parse(selectedBlock.dataset.shape) : JSON.parse(touchDraggingBlock.dataset.shape);
+        const shape = selectedBlock
+            ? JSON.parse(selectedBlock.dataset.shape)
+            : JSON.parse(touchDraggingBlock.dataset.shape);
         let canPlace = true;
 
         shape.forEach((row, rIdx) => {
@@ -971,6 +973,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let touchStartY = 0;
     let touchDraggingBlock = null;
     let touchDragPreview = null;
+    let previewCell = null;
 
     blocksContainer.addEventListener("touchstart", (event) => {
         const touch = event.touches[0];
@@ -1022,13 +1025,30 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    function mapRange(value, inMin, inMax, outMin, outMax) {
+        return outMin + ((value - inMin) * (outMax - outMin)) / (inMax - inMin);
+    }
+
     blocksContainer.addEventListener("touchmove", (event) => {
         if (touchDraggingBlock && touchDragPreview) {
             event.preventDefault();
             const touch = event.touches[0];
+            const screenMid = window.innerHeight / 2;
+
+            const mappedY = mapRange(
+                touch.clientY,
+                screenMid,
+                window.innerHeight,
+                0,
+                window.innerHeight
+            );
+
+            // Keep X the same for simplicity.
             touchDragPreview.style.left = `${touch.clientX}px`;
-            touchDragPreview.style.top = `${touch.clientY}px`;
-            showPreviewOnTouch(touch.clientX, touch.clientY);
+            touchDragPreview.style.top = `${mappedY}px`;
+
+            previewCell = document.elementFromPoint(touch.clientX, mappedY);
+            showPreviewOnTouch(touch.clientX, mappedY);
         }
     });
 
@@ -1037,15 +1057,11 @@ document.addEventListener("DOMContentLoaded", () => {
             touchDraggingBlock.classList.remove("dragging");
             document.body.removeChild(touchDragPreview);
             touchDragPreview = null;
-            const touch = event.changedTouches[0];
-            const dropTarget = document.elementFromPoint(
-                touch.clientX,
-                touch.clientY
-            );
-            if (dropTarget && dropTarget.classList.contains("square")) {
-                placeBlock(dropTarget, touchDraggingBlock);
+            if (previewCell && previewCell.classList.contains("square")) {
+                placeBlock(previewCell, touchDraggingBlock);
             }
             touchDraggingBlock = null;
+            previewCell = null;
         }
     });
 
@@ -1086,7 +1102,9 @@ document.addEventListener("DOMContentLoaded", () => {
             row.forEach((cell, cIdx) => {
                 if (cell) {
                     const targetCell = document.querySelector(
-                        `.square[data-row="${startRow + rIdx}"][data-col="${startCol + cIdx}"]`
+                        `.square[data-row="${startRow + rIdx}"][data-col="${
+                            startCol + cIdx
+                        }"]`
                     );
                     if (!targetCell || targetCell.style.backgroundColor) {
                         canPlace = false;
@@ -1100,7 +1118,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 row.forEach((cell, cIdx) => {
                     if (cell) {
                         const targetCell = document.querySelector(
-                            `.square[data-row="${startRow + rIdx}"][data-col="${startCol + cIdx}"]`
+                            `.square[data-row="${startRow + rIdx}"][data-col="${
+                                startCol + cIdx
+                            }"]`
                         );
                         targetCell.style.backgroundColor = color;
                     }
