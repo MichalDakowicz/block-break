@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
         <title>Block Break</title>
         <link rel="stylesheet" href="style.css" />
     </head>
@@ -39,7 +39,7 @@
             <div id="game">
                 <div id="squares"></div>
 
-                <div id="block-select"></div>
+                <div id="block-select" ontouchstart="event.preventDefault();"></div>
             </div>
 
             <div id="game-over" class="hidden">

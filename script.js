@@ -59,9 +59,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     resetButtonGameOverDialog.addEventListener("click", resetGame);
 
-    const resetButtonGameOver = document.getElementById("reset-game-no-lives"); // Added reference for reset button in game-over dialog
+    const resetButtonGameOver = document.getElementById("reset-game-no-lives");
     if (resetButtonGameOver) {
-        resetButtonGameOver.addEventListener("click", resetGame); // Added event listener
+        resetButtonGameOver.addEventListener("click", resetGame);
     }
 
     function showGameOverDialog() {
@@ -235,6 +235,24 @@ document.addEventListener("DOMContentLoaded", () => {
             [1, 1, 1],
             [1, 0, 0],
             [1, 0, 0],
+        ],
+        [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+        ],
+        [
+            [0, 0, 1],
+            [0, 1, 0],
+            [1, 0, 0],
+        ],
+        [
+            [1, 0],
+            [0, 1],
+        ],
+        [
+            [0, 1],
+            [1, 0],
         ],
     ];
 
@@ -452,7 +470,7 @@ document.addEventListener("DOMContentLoaded", () => {
             blockDiv.appendChild(rowDiv);
         });
 
-        blockDiv.draggable = true; // Make the block draggable
+        blockDiv.draggable = true;
 
         return blockDiv;
     }
@@ -597,7 +615,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             saveGameState();
-            clearPreview(); // Hide the preview instantly after placing
+            clearPreview();
         }
     });
 
@@ -741,9 +759,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function showPreview(startRow, startCol) {
         clearPreview();
-        if (!selectedBlock) return;
+        if (!selectedBlock && !touchDraggingBlock) return;
 
-        const shape = JSON.parse(selectedBlock.dataset.shape);
+        const shape = selectedBlock ? JSON.parse(selectedBlock.dataset.shape) : JSON.parse(touchDraggingBlock.dataset.shape);
         let canPlace = true;
 
         shape.forEach((row, rIdx) => {
@@ -758,6 +776,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         targetCell.classList.add("preview");
                         if (targetCell.style.backgroundColor) {
                             canPlace = false;
+                            targetCell.classList.add("preview-wrong");
                         }
                     } else {
                         canPlace = false;
@@ -811,6 +830,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         targetCell.classList.add("preview");
                         if (targetCell.style.backgroundColor) {
                             canPlace = false;
+                            targetCell.classList.add("preview-wrong");
                         }
                     } else {
                         canPlace = false;
@@ -836,103 +856,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
     }
-
-    gridContainer.addEventListener("dragover", (event) => {
-        event.preventDefault();
-        const cell = event.target;
-        if (cell.classList.contains("square")) {
-            const startRow = parseInt(cell.dataset.row);
-            const startCol = parseInt(cell.dataset.col);
-            showSnappingPreview(startRow, startCol);
-        }
-    });
-
-    gridContainer.addEventListener("dragleave", () => {
-        clearPreview();
-    });
-
-    gridContainer.addEventListener("drop", (event) => {
-        event.preventDefault();
-        const cell = event.target;
-        if (!draggedBlock || !cell.classList.contains("square")) return;
-
-        const shape = JSON.parse(draggedBlock.dataset.shape);
-        const color = draggedBlock.dataset.color;
-
-        const startRow = parseInt(cell.dataset.row);
-        const startCol = parseInt(cell.dataset.col);
-
-        let canPlace = true;
-
-        shape.forEach((row, rIdx) => {
-            row.forEach((cell, cIdx) => {
-                if (cell) {
-                    const targetCell = document.querySelector(
-                        `.square[data-row="${startRow + rIdx}"][data-col="${
-                            startCol + cIdx
-                        }"]`
-                    );
-                    if (!targetCell || targetCell.style.backgroundColor) {
-                        canPlace = false;
-                    }
-                }
-            });
-        });
-
-        if (canPlace) {
-            shape.forEach((row, rIdx) => {
-                row.forEach((cell, cIdx) => {
-                    if (cell) {
-                        const targetCell = document.querySelector(
-                            `.square[data-row="${startRow + rIdx}"][data-col="${
-                                startCol + cIdx
-                            }"]`
-                        );
-                        targetCell.style.backgroundColor = color;
-                    }
-                });
-            });
-
-            draggedBlock.remove();
-            draggedBlock = null;
-            placedBlocksCount++;
-
-            if (placedBlocksCount === 3) {
-                generateBlocks();
-                placedBlocksCount = 0;
-            }
-
-            updateScore(calculateBlockScore(shape));
-
-            checkAndBreakLines();
-
-            if (!hasValidMoves() && initialBlocksGenerated) {
-                if (blocksContainer.children.length === 0) {
-                    generateBlocksForce();
-                } else {
-                    if (lives > 0) {
-                        showGameOverDialog();
-                    } else {
-                        showGameOverNoLivesDialog();
-                    }
-                }
-            }
-
-            saveGameState();
-            clearPreview(); // Hide the preview instantly after placing
-        } else {
-            clearPreview();
-        }
-    });
-
-    gridContainer.addEventListener("dragenter", (event) => {
-        const cell = event.target;
-        if (cell.classList.contains("square")) {
-            const startRow = parseInt(cell.dataset.row);
-            const startCol = parseInt(cell.dataset.col);
-            showSnappingPreview(startRow, startCol);
-        }
-    });
 
     let draggedBlock = null;
 
@@ -996,82 +919,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    gridContainer.addEventListener("mouseleave", () => {
-        clearPreview();
-    });
-
     gridContainer.addEventListener("drop", (event) => {
         event.preventDefault();
         const cell = event.target;
         if (!draggedBlock || !cell.classList.contains("square")) return;
 
-        const shape = JSON.parse(draggedBlock.dataset.shape);
-        const color = draggedBlock.dataset.color;
-
-        const startRow = parseInt(cell.dataset.row);
-        const startCol = parseInt(cell.dataset.col);
-
-        let canPlace = true;
-
-        shape.forEach((row, rIdx) => {
-            row.forEach((cell, cIdx) => {
-                if (cell) {
-                    const targetCell = document.querySelector(
-                        `.square[data-row="${startRow + rIdx}"][data-col="${
-                            startCol + cIdx
-                        }"]`
-                    );
-                    if (!targetCell || targetCell.style.backgroundColor) {
-                        canPlace = false;
-                    }
-                }
-            });
-        });
-
-        if (canPlace) {
-            shape.forEach((row, rIdx) => {
-                row.forEach((cell, cIdx) => {
-                    if (cell) {
-                        const targetCell = document.querySelector(
-                            `.square[data-row="${startRow + rIdx}"][data-col="${
-                                startCol + cIdx
-                            }"]`
-                        );
-                        targetCell.style.backgroundColor = color;
-                    }
-                });
-            });
-
-            draggedBlock.remove();
-            draggedBlock = null;
-            placedBlocksCount++;
-
-            if (placedBlocksCount === 3) {
-                generateBlocks();
-                placedBlocksCount = 0;
-            }
-
-            updateScore(calculateBlockScore(shape));
-
-            checkAndBreakLines();
-
-            if (!hasValidMoves() && initialBlocksGenerated) {
-                if (blocksContainer.children.length === 0) {
-                    generateBlocksForce();
-                } else {
-                    if (lives > 0) {
-                        showGameOverDialog();
-                    } else {
-                        showGameOverNoLivesDialog();
-                    }
-                }
-            }
-
-            saveGameState();
-            clearPreview(); // Hide the preview instantly after placing
-        } else {
-            clearPreview();
-        }
+        placeBlock(cell, draggedBlock);
     });
 
     gridContainer.addEventListener("dragenter", (event) => {
@@ -1079,7 +932,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (cell.classList.contains("square")) {
             const startRow = parseInt(cell.dataset.row);
             const startCol = parseInt(cell.dataset.col);
-            showPreview(startRow, startCol);
+            showSnappingPreview(startRow, startCol);
         }
     });
 
@@ -1102,8 +955,127 @@ document.addEventListener("DOMContentLoaded", () => {
         const cell = event.target;
         if (!draggedBlock || !cell.classList.contains("square")) return;
 
-        const shape = JSON.parse(draggedBlock.dataset.shape);
-        const color = draggedBlock.dataset.color;
+        placeBlock(cell, draggedBlock);
+    });
+
+    gridContainer.addEventListener("dragenter", (event) => {
+        const cell = event.target;
+        if (cell.classList.contains("square")) {
+            const startRow = parseInt(cell.dataset.row);
+            const startCol = parseInt(cell.dataset.col);
+            showSnappingPreview(startRow, startCol);
+        }
+    });
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchDraggingBlock = null;
+    let touchDragPreview = null;
+
+    blocksContainer.addEventListener("touchstart", (event) => {
+        const touch = event.touches[0];
+        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+        const block = target.closest(".block-pick");
+        if (block) {
+            touchDraggingBlock = block;
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            block.classList.add("dragging");
+
+            const shape = JSON.parse(block.dataset.shape);
+            const color = block.dataset.color;
+
+            touchDragPreview = document.createElement("div");
+            touchDragPreview.style.display = "flex";
+            touchDragPreview.style.flexDirection = "column";
+            touchDragPreview.style.alignItems = "center";
+            touchDragPreview.style.justifyContent = "center";
+            touchDragPreview.style.position = "fixed";
+            touchDragPreview.style.pointerEvents = "none";
+            touchDragPreview.style.zIndex = "1000";
+            touchDragPreview.style.transform = "translate(0, 0) scale(1)";
+            touchDragPreview.style.left = `${touch.clientX}px`;
+            touchDragPreview.style.top = `${touch.clientY}px`;
+
+            shape.forEach((row) => {
+                const rowDiv = document.createElement("div");
+                rowDiv.style.display = "flex";
+                rowDiv.style.justifyContent = "center";
+                row.forEach((cell) => {
+                    const cellDiv = document.createElement("div");
+                    cellDiv.style.width = "38px";
+                    cellDiv.style.height = "38px";
+                    cellDiv.style.margin = "0";
+                    cellDiv.style.border = "1px solid var(--border-color)";
+                    cellDiv.style.opacity = "0.5";
+                    if (cell) {
+                        cellDiv.style.backgroundColor = color;
+                    } else {
+                        cellDiv.style.visibility = "hidden";
+                    }
+                    rowDiv.appendChild(cellDiv);
+                });
+                touchDragPreview.appendChild(rowDiv);
+            });
+
+            document.body.appendChild(touchDragPreview);
+        }
+    });
+
+    blocksContainer.addEventListener("touchmove", (event) => {
+        if (touchDraggingBlock && touchDragPreview) {
+            event.preventDefault();
+            const touch = event.touches[0];
+            touchDragPreview.style.left = `${touch.clientX}px`;
+            touchDragPreview.style.top = `${touch.clientY}px`;
+            showPreviewOnTouch(touch.clientX, touch.clientY);
+        }
+    });
+
+    blocksContainer.addEventListener("touchend", (event) => {
+        if (touchDraggingBlock && touchDragPreview) {
+            touchDraggingBlock.classList.remove("dragging");
+            document.body.removeChild(touchDragPreview);
+            touchDragPreview = null;
+            const touch = event.changedTouches[0];
+            const dropTarget = document.elementFromPoint(
+                touch.clientX,
+                touch.clientY
+            );
+            if (dropTarget && dropTarget.classList.contains("square")) {
+                placeBlock(dropTarget, touchDraggingBlock);
+            }
+            touchDraggingBlock = null;
+        }
+    });
+
+    gridContainer.addEventListener("touchstart", (event) => {
+        if (touchDraggingBlock) {
+            const touch = event.touches[0];
+            const cell = document.elementFromPoint(
+                touch.clientX,
+                touch.clientY
+            );
+            if (cell && cell.classList.contains("square")) {
+                showPreview(
+                    parseInt(cell.dataset.row),
+                    parseInt(cell.dataset.col)
+                );
+            }
+        }
+    });
+
+    function showPreviewOnTouch(x, y) {
+        clearPreview();
+        const cell = document.elementFromPoint(x, y);
+        if (cell && cell.classList.contains("square")) {
+            showPreview(parseInt(cell.dataset.row), parseInt(cell.dataset.col));
+        }
+    }
+
+    function placeBlock(cell, block) {
+        const shape = JSON.parse(block.dataset.shape);
+        const color = block.dataset.color;
 
         const startRow = parseInt(cell.dataset.row);
         const startCol = parseInt(cell.dataset.col);
@@ -1114,9 +1086,7 @@ document.addEventListener("DOMContentLoaded", () => {
             row.forEach((cell, cIdx) => {
                 if (cell) {
                     const targetCell = document.querySelector(
-                        `.square[data-row="${startRow + rIdx}"][data-col="${
-                            startCol + cIdx
-                        }"]`
+                        `.square[data-row="${startRow + rIdx}"][data-col="${startCol + cIdx}"]`
                     );
                     if (!targetCell || targetCell.style.backgroundColor) {
                         canPlace = false;
@@ -1130,17 +1100,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 row.forEach((cell, cIdx) => {
                     if (cell) {
                         const targetCell = document.querySelector(
-                            `.square[data-row="${startRow + rIdx}"][data-col="${
-                                startCol + cIdx
-                            }"]`
+                            `.square[data-row="${startRow + rIdx}"][data-col="${startCol + cIdx}"]`
                         );
                         targetCell.style.backgroundColor = color;
                     }
                 });
             });
 
-            draggedBlock.remove();
-            draggedBlock = null;
+            block.remove();
             placedBlocksCount++;
 
             if (placedBlocksCount === 3) {
@@ -1165,18 +1132,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             saveGameState();
-            clearPreview(); // Hide the preview instantly after placing
+            clearPreview();
         } else {
             clearPreview();
         }
-    });
-
-    gridContainer.addEventListener("dragenter", (event) => {
-        const cell = event.target;
-        if (cell.classList.contains("square")) {
-            const startRow = parseInt(cell.dataset.row);
-            const startCol = parseInt(cell.dataset.col);
-            showSnappingPreview(startRow, startCol);
-        }
-    });
+    }
 });
