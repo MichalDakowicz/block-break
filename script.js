@@ -1,23 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const darkModeToggle = document.getElementById("dark-mode");
     const body = document.body;
-
-    if (darkModeToggle) {
-        darkModeToggle.addEventListener("change", () => {
-            if (darkModeToggle.checked) {
-                body.classList.add("dark-mode");
-                localStorage.setItem("darkMode", "enabled");
-            } else {
-                body.classList.remove("dark-mode");
-                localStorage.setItem("darkMode", "disabled");
-            }
-        });
-
-        if (localStorage.getItem("darkMode") === "enabled") {
-            body.classList.add("dark-mode");
-            darkModeToggle.checked = true;
-        }
-    }
 
     const blocksContainer = document.getElementById("block-select");
     const gridContainer = document.getElementById("squares");
@@ -374,6 +356,8 @@ document.addEventListener("DOMContentLoaded", () => {
         let attempts = 0;
         const maxAttempts = 100;
 
+        const generatedBlocks = [];
+
         for (let i = 0; i < 3; i++) {
             let blockShape, blockColor, blockElement;
             do {
@@ -396,11 +380,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            generatedBlocks.push(blockElement);
+        }
+
+        // Ensure all three blocks can fit on the board
+        if (!canPlaceAllBlocks(generatedBlocks)) {
+            console.error("Generated blocks cannot all fit on the board.");
+            showGameOverNoLivesDialog();
+            return;
+        }
+
+        generatedBlocks.forEach((blockElement) => {
             blocksContainer.appendChild(blockElement);
             blockElement.addEventListener("click", () =>
                 selectBlock(blockElement)
             );
-        }
+        });
 
         saveGameState();
 
@@ -413,6 +408,65 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             initialBlocksGenerated = true;
             isLosingReshuffle = false;
+        }
+    }
+
+    function canPlaceAllBlocks(blocks) {
+        const rows = 8;
+        const cols = 8;
+        const board = Array.from({ length: rows }, () =>
+            Array(cols).fill(false)
+        );
+
+        for (const block of blocks) {
+            const shape = JSON.parse(block.dataset.shape);
+            let placed = false;
+
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    if (canPlaceShapeAt(shape, row, col, board)) {
+                        placeShapeAt(shape, row, col, board);
+                        placed = true;
+                        break;
+                    }
+                }
+                if (placed) break;
+            }
+
+            if (!placed) return false;
+        }
+
+        return true;
+    }
+
+    function canPlaceShapeAt(shape, startRow, startCol, board) {
+        for (let r = 0; r < shape.length; r++) {
+            for (let c = 0; c < shape[r].length; c++) {
+                if (shape[r][c]) {
+                    const row = startRow + r;
+                    const col = startCol + c;
+                    if (
+                        row >= board.length ||
+                        col >= board[0].length ||
+                        board[row][col]
+                    ) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    function placeShapeAt(shape, startRow, startCol, board) {
+        for (let r = 0; r < shape.length; r++) {
+            for (let c = 0; c < shape[r].length; c++) {
+                if (shape[r][c]) {
+                    const row = startRow + r;
+                    const col = startCol + c;
+                    board[row][col] = true;
+                }
+            }
         }
     }
 
@@ -780,19 +834,6 @@ document.addEventListener("DOMContentLoaded", () => {
     highScore_Element.textContent = localStorage.getItem("highScore_") || 0;
 
     const refreshButton = document.getElementById("refresh");
-    const refreshIcon = document.getElementById("refresh-icon");
-
-    function updateRefreshIcon() {
-        if (body.classList.contains("dark-mode")) {
-            refreshIcon.src = "img/refresh_dark.svg";
-        } else {
-            refreshIcon.src = "img/refresh_light.svg";
-        }
-    }
-
-    updateRefreshIcon();
-
-    darkModeToggle.addEventListener("change", updateRefreshIcon);
 
     refreshButton.addEventListener("click", resetGame);
 
