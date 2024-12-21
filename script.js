@@ -262,7 +262,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let score = 0;
     let lives = 3;
     const scoreElement = document.getElementById("score");
-    const highScoreElement = document.getElementById("high-score");
+    const highScore_Element = document.getElementById("high-score");
     const livesElement = document.getElementById("lives");
 
     const resetButton = document.getElementById("reset-game");
@@ -289,10 +289,10 @@ document.addEventListener("DOMContentLoaded", () => {
         score += points;
         scoreElement.textContent = score;
         scoreEndElement.textContent = score;
-        const highScore = localStorage.getItem("highScore") || 0;
-        if (score > highScore) {
-            localStorage.setItem("highScore", score);
-            highScoreElement.textContent = score;
+        const highScore_ = localStorage.getItem("highScore_") || 0;
+        if (score > highScore_) {
+            localStorage.setItem("highScore_", score);
+            highScore_Element.textContent = score;
         }
     }
 
@@ -777,7 +777,7 @@ document.addEventListener("DOMContentLoaded", () => {
         generateBlocks();
     }
 
-    highScoreElement.textContent = localStorage.getItem("highScore") || 0;
+    highScore_Element.textContent = localStorage.getItem("highScore_") || 0;
 
     const refreshButton = document.getElementById("refresh");
     const refreshIcon = document.getElementById("refresh-icon");
@@ -1036,8 +1036,8 @@ document.addEventListener("DOMContentLoaded", () => {
             touchDragPreview.style.pointerEvents = "none";
             touchDragPreview.style.zIndex = "1000";
             touchDragPreview.style.transform = "translate(0, 0) scale(1)";
-            touchDragPreview.style.left = `${touch.clientX}px`;
-            touchDragPreview.style.top = `${touch.clientY}px`;
+            touchDragPreview.style.left = `${touch.clientX - 19}px`; // Adjust to center the top-left square
+            touchDragPreview.style.top = `${touch.clientY - 19}px`; // Adjust to center the top-left square
 
             shape.forEach((row) => {
                 const rowDiv = document.createElement("div");
@@ -1045,8 +1045,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 rowDiv.style.justifyContent = "center";
                 row.forEach((cell) => {
                     const cellDiv = document.createElement("div");
-                    cellDiv.style.width = "38px";
-                    cellDiv.style.height = "38px";
+                    cellDiv.style.width = "38px"; // Adjust size to match grid cells
+                    cellDiv.style.height = "38px"; // Adjust size to match grid cells
                     cellDiv.style.margin = "0";
                     cellDiv.style.border = "1px solid var(--border-color)";
                     cellDiv.style.opacity = "0.5";
@@ -1083,8 +1083,8 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
             // Keep X the same for simplicity.
-            touchDragPreview.style.left = `${touch.clientX}px`;
-            touchDragPreview.style.top = `${mappedY}px`;
+            touchDragPreview.style.left = `${touch.clientX - 19}px`;
+            touchDragPreview.style.top = `${mappedY - 19}px`;
 
             previewCell = document.elementFromPoint(touch.clientX, mappedY);
             showPreviewOnTouch(touch.clientX, mappedY);
