@@ -258,6 +258,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const comboProgressBar = document.getElementById("combo-progress-bar");
     const comboBox = document.getElementById("combo-info");
 
+    const score_base = 10;
+    const score_bingo = [1, 3, 6, 10, 15, 21];
+
     function updateComboDisplay() {
         comboCountElement.textContent = comboCount;
         const progressPercentage = (comboMovesLeft / 3) * 100;
@@ -288,11 +291,12 @@ document.addEventListener("DOMContentLoaded", () => {
         return count;
     }
 
-    function calculateComboBonus() {
-        if (comboCount >= 2) {
-            return (comboCount - 1) * 10;
-        }
-        return 0;
+    function calculateScore(clearedLines, blockValue) {
+        const comboMultiplier = comboCount + 1;
+        const linesClearedMultiplier = score_bingo[clearedLines - 1] || 0; 
+
+        const baseScore = blockValue;
+        return baseScore * linesClearedMultiplier * comboMultiplier;
     }
 
     function showReshuffleDialog() {
@@ -383,7 +387,6 @@ document.addEventListener("DOMContentLoaded", () => {
             generatedBlocks.push(blockElement);
         }
 
-        // Ensure all three blocks can fit on the board
         if (!canPlaceAllBlocks(generatedBlocks)) {
             console.error("Generated blocks cannot all fit on the board.");
             showGameOverNoLivesDialog();
@@ -765,8 +768,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (breakableRows.length > 0 || breakableCols.length > 0) {
             const multiplier = breakableRows.length + breakableCols.length;
-            const comboBonus = calculateComboBonus();
-            updateScore(multiplier * 10 + comboBonus);
+            const comboBonus = calculateScore(multiplier, score_base);
+            updateScore(comboBonus);
         }
     }
 
@@ -1077,8 +1080,8 @@ document.addEventListener("DOMContentLoaded", () => {
             touchDragPreview.style.pointerEvents = "none";
             touchDragPreview.style.zIndex = "1000";
             touchDragPreview.style.transform = "translate(0, 0) scale(1)";
-            touchDragPreview.style.left = `${touch.clientX - 19}px`; // Adjust to center the top-left square
-            touchDragPreview.style.top = `${touch.clientY - 19}px`; // Adjust to center the top-left square
+            touchDragPreview.style.left = `${touch.clientX - 19}px`;
+            touchDragPreview.style.top = `${touch.clientY - 19}px`;
 
             shape.forEach((row) => {
                 const rowDiv = document.createElement("div");
@@ -1086,8 +1089,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 rowDiv.style.justifyContent = "center";
                 row.forEach((cell) => {
                     const cellDiv = document.createElement("div");
-                    cellDiv.style.width = "38px"; // Adjust size to match grid cells
-                    cellDiv.style.height = "38px"; // Adjust size to match grid cells
+                    cellDiv.style.width = "38px";
+                    cellDiv.style.height = "38px";
                     cellDiv.style.margin = "0";
                     cellDiv.style.border = "1px solid var(--border-color)";
                     cellDiv.style.opacity = "0.5";
@@ -1123,7 +1126,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 window.innerHeight
             );
 
-            // Keep X the same for simplicity.
             touchDragPreview.style.left = `${touch.clientX - 19}px`;
             touchDragPreview.style.top = `${mappedY - 19}px`;
 
