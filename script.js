@@ -1,6 +1,7 @@
+// Wait for the DOM to fully load before executing the script
 document.addEventListener("DOMContentLoaded", () => {
+    // Get references to various DOM elements
     const body = document.body;
-
     const blocksContainer = document.getElementById("block-select");
     const gridContainer = document.getElementById("squares");
     const gameOverDialog = document.getElementById("game-over");
@@ -13,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let isLosingReshuffle = false;
 
+    // Event listener for reshuffling blocks
     reshuffleButton.addEventListener("click", () => {
         if (blocksContainer.children.length === 0 || isLosingReshuffle) {
             if (lives > 0) {
@@ -39,6 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Event listener for resetting the game from the game over dialog
     resetButtonGameOverDialog.addEventListener("click", resetGame);
 
     const resetButtonGameOver = document.getElementById("reset-game-no-lives");
@@ -46,6 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
         resetButtonGameOver.addEventListener("click", resetGame);
     }
 
+    // Function to show the game over dialog
     function showGameOverDialog() {
         if (hasValidMoves()) {
             generateBlocks();
@@ -57,14 +61,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Function to hide the game over dialog
     function hideGameOverDialog() {
         gameOverDialog.classList.add("hidden");
     }
 
+    // Function to show the game over dialog when no lives are left
     function showGameOverNoLivesDialog() {
         gameOverNoLivesDialog.classList.remove("hidden");
     }
 
+    // Function to hide the game over dialog when no lives are left
     function hideGameOverNoLivesDialog() {
         gameOverNoLivesDialog.classList.add("hidden");
     }
@@ -74,6 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
+    // Define the shapes of the blocks
     const blockShapes = [
         [[1]],
 
@@ -261,6 +269,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const score_base = 10;
     const score_bingo = [1, 3, 6, 10, 15, 21];
 
+    // Function to update the combo display
     function updateComboDisplay() {
         comboCountElement.textContent = comboCount;
         const progressPercentage = (comboMovesLeft / 3) * 100;
@@ -270,6 +279,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Function to update the score
     function updateScore(points) {
         score += points;
         scoreElement.textContent = score;
@@ -281,6 +291,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Function to calculate the score of a block based on its shape
     function calculateBlockScore(shape) {
         let count = 0;
         shape.forEach((row) => {
@@ -291,14 +302,16 @@ document.addEventListener("DOMContentLoaded", () => {
         return count;
     }
 
+    // Function to calculate the score based on cleared lines and block value
     function calculateScore(clearedLines, blockValue) {
         const comboMultiplier = comboCount + 1;
-        const linesClearedMultiplier = score_bingo[clearedLines - 1] || 0; 
+        const linesClearedMultiplier = score_bingo[clearedLines - 1] || 0;
 
         const baseScore = blockValue;
         return baseScore * linesClearedMultiplier * comboMultiplier;
     }
 
+    // Function to show the reshuffle dialog
     function showReshuffleDialog() {
         const reshuffle = confirm(
             "Game Over! Do you want to reshuffle the blocks and continue? This will remove 1 life."
@@ -325,6 +338,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Function to reset the game
     function resetGame() {
         hideGameOverDialog();
         hideGameOverNoLivesDialog();
@@ -347,6 +361,7 @@ document.addEventListener("DOMContentLoaded", () => {
         isLosingReshuffle = false;
     }
 
+    // Function to generate new blocks
     function generateBlocks() {
         if (blocksContainer.children.length > 0 && !isLosingReshuffle) {
             console.error(
@@ -414,6 +429,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Function to check if all blocks can be placed on the board
     function canPlaceAllBlocks(blocks) {
         const rows = 8;
         const cols = 8;
@@ -442,6 +458,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return true;
     }
 
+    // Function to check if a shape can be placed at a specific position on the board
     function canPlaceShapeAt(shape, startRow, startCol, board) {
         for (let r = 0; r < shape.length; r++) {
             for (let c = 0; c < shape[r].length; c++) {
@@ -461,6 +478,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return true;
     }
 
+    // Function to place a shape at a specific position on the board
     function placeShapeAt(shape, startRow, startCol, board) {
         for (let r = 0; r < shape.length; r++) {
             for (let c = 0; c < shape[r].length; c++) {
@@ -473,6 +491,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Function to forcefully generate new blocks
     function generateBlocksForce() {
         blocksContainer.innerHTML = "";
 
@@ -492,6 +511,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Function to check if a block can be placed on the board
     function canPlaceBlock(shape) {
         const rows = 8;
         const cols = 8;
@@ -527,6 +547,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return false;
     }
 
+    // Function to create a block element
     function createBlockElement(shape, color) {
         const blockDiv = document.createElement("div");
         blockDiv.style.display = "flex";
@@ -558,6 +579,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return blockDiv;
     }
 
+    // Function to get a random color for the blocks
     function getRandomColor() {
         const colors = [
             "var(--red-block)",
@@ -572,15 +594,16 @@ document.addEventListener("DOMContentLoaded", () => {
         return colors[Math.floor(Math.random() * colors.length)];
     }
 
+    // Function to select a block
     function selectBlock(block) {
         document
             .querySelectorAll(".block-pick")
             .forEach((b) => b.classList.remove("selected"));
-
         block.classList.add("selected");
         selectedBlock = block;
     }
 
+    // Function to save the game state to local storage
     function saveGameState() {
         const boardState = [];
         document.querySelectorAll(".square").forEach((cell) => {
@@ -599,6 +622,7 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("lives", lives);
     }
 
+    // Function to load the game state from local storage
     function loadGameState() {
         const boardState = JSON.parse(localStorage.getItem("boardState"));
         const blocksState = JSON.parse(localStorage.getItem("blocksState"));
@@ -629,6 +653,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let reshuffled = false;
 
+    // Event listener for placing a block on the grid
     gridContainer.addEventListener("click", (event) => {
         if (!selectedBlock) return;
 
@@ -702,6 +727,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Function to check and break completed lines
     function checkAndBreakLines() {
         const rows = 8;
         const cols = 8;
@@ -773,6 +799,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Function to check if there are valid moves left
     function hasValidMoves() {
         const rows = 8;
         const cols = 8;
@@ -813,6 +840,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return false;
     }
 
+    // Function to initialize the grid
     function initializeGrid(rows, cols) {
         gridContainer.innerHTML = "";
         for (let row = 0; row < rows; row++) {
@@ -840,6 +868,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     refreshButton.addEventListener("click", resetGame);
 
+    // Function to show a preview of the block placement
     function showPreview(startRow, startCol) {
         clearPreview();
         if (!selectedBlock && !touchDraggingBlock) return;
@@ -888,6 +917,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Function to clear the block placement preview
     function clearPreview() {
         document
             .querySelectorAll(".preview, .preview-wrong")
@@ -896,6 +926,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
+    // Function to show a snapping preview of the block placement
     function showSnappingPreview(startRow, startCol) {
         clearPreview();
         if (!draggedBlock) return;
@@ -944,6 +975,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let draggedBlock = null;
 
+    // Event listener for starting to drag a block
     blocksContainer.addEventListener("dragstart", (event) => {
         if (event.target.classList.contains("block-pick")) {
             draggedBlock = event.target;
@@ -990,10 +1022,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Event listener for ending the drag of a block
     blocksContainer.addEventListener("dragend", () => {
         draggedBlock = null;
     });
 
+    // Event listener for dragging a block over the grid
     gridContainer.addEventListener("dragover", (event) => {
         event.preventDefault();
         const cell = event.target;
@@ -1004,6 +1038,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Event listener for dropping a block on the grid
     gridContainer.addEventListener("drop", (event) => {
         event.preventDefault();
         const cell = event.target;
@@ -1012,6 +1047,7 @@ document.addEventListener("DOMContentLoaded", () => {
         placeBlock(cell, draggedBlock);
     });
 
+    // Event listener for entering a cell while dragging a block
     gridContainer.addEventListener("dragenter", (event) => {
         const cell = event.target;
         if (cell.classList.contains("square")) {
@@ -1021,6 +1057,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Event listener for dragging a block over the grid
     gridContainer.addEventListener("dragover", (event) => {
         event.preventDefault();
         const cell = event.target;
@@ -1031,10 +1068,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Event listener for leaving a cell while dragging a block
     gridContainer.addEventListener("dragleave", () => {
         clearPreview();
     });
 
+    // Event listener for dropping a block on the grid
     gridContainer.addEventListener("drop", (event) => {
         event.preventDefault();
         const cell = event.target;
@@ -1043,6 +1082,7 @@ document.addEventListener("DOMContentLoaded", () => {
         placeBlock(cell, draggedBlock);
     });
 
+    // Event listener for entering a cell while dragging a block
     gridContainer.addEventListener("dragenter", (event) => {
         const cell = event.target;
         if (cell.classList.contains("square")) {
@@ -1058,6 +1098,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let touchDragPreview = null;
     let previewCell = null;
 
+    // Event listener for starting to touch a block
     blocksContainer.addEventListener("touchstart", (event) => {
         const touch = event.touches[0];
         const target = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -1108,10 +1149,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Function to map a value from one range to another
     function mapRange(value, inMin, inMax, outMin, outMax) {
         return outMin + ((value - inMin) * (outMax - outMin)) / (inMax - inMin);
     }
 
+    // Event listener for moving a touch while dragging a block
     blocksContainer.addEventListener("touchmove", (event) => {
         if (touchDraggingBlock && touchDragPreview) {
             event.preventDefault();
@@ -1134,6 +1177,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Event listener for ending a touch while dragging a block
     blocksContainer.addEventListener("touchend", (event) => {
         if (touchDraggingBlock && touchDragPreview) {
             touchDraggingBlock.classList.remove("dragging");
@@ -1147,6 +1191,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Event listener for starting to touch the grid
     gridContainer.addEventListener("touchstart", (event) => {
         if (touchDraggingBlock) {
             const touch = event.touches[0];
@@ -1163,6 +1208,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Function to show a preview of the block placement on touch
     function showPreviewOnTouch(x, y) {
         clearPreview();
         const cell = document.elementFromPoint(x, y);
@@ -1171,6 +1217,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Function to place a block on the grid
     function placeBlock(cell, block) {
         const shape = JSON.parse(block.dataset.shape);
         const color = block.dataset.color;
